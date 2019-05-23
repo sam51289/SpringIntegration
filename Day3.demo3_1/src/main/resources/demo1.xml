@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:int-webflux="http://www.springframework.org/schema/integration/webflux"
+	xmlns:int-stream="http://www.springframework.org/schema/integration/stream"
+	xmlns:int-feed="http://www.springframework.org/schema/integration/feed"
+	xmlns:int-file="http://www.springframework.org/schema/integration/file"
+	xsi:schemaLocation="
+   http://www.springframework.org/schema/beans
+   https://www.springframework.org/schema/beans/spring-beans.xsd
+   http://www.springframework.org/schema/integration
+   https://www.springframework.org/schema/integration/spring-integration.xsd
+   http://www.springframework.org/schema/integration/webflux
+   https://www.springframework.org/schema/integration/webflux/spring-integration-webflux.xsd
+   http://www.springframework.org/schema/integration/stream
+   https://www.springframework.org/schema/integration/stream/spring-integration-stream.xsd
+   http://www.springframework.org/schema/integration/file
+   https://www.springframework.org/schema/integration/file/spring-integration-file.xsd
+   http://www.springframework.org/schema/integration/feed
+   https://www.springframework.org/schema/integration/feed/spring-integration-feed.xsd">   
+   
+
+	<!--  <int-stream:stdin-channel-adapter id="input" channel="first"></int-stream:stdin-channel-adapter>-->
+	
+	<!-- <int:channel id="first"></int:channel> -->
+	
+	<int-feed:inbound-channel-adapter id="input" url="https://timesofindia.indiatimes.com/rssfeedstopstories.cms" 
+		channel="rssInput"
+		
+		></int-feed:inbound-channel-adapter>
+	
+	<!-- <int-stream:stdout-channel-adapter id="output1" channel="first"></int-stream:stdout-channel-adapter> -->
+	<!-- <int-stream:stdout-channel-adapter  id="output2" channel="first"></int-stream:stdout-channel-adapter> -->
+	
+	<int:transformer  input-channel="rssInput" output-channel="fileOut" 
+	expression="payload.title"
+	></int:transformer>
+	
+	<!-- <int-file:outbound-channel-adapter directory="/aaa" 
+		 filename-generator="filenameGenerator" 
+		 channel="fileOut"></int-file:outbound-channel-adapter>
+	 <bean id="filenameGenerator" class="demo3.DummyFileGenerator"/> -->
+	 
+	 <int-file:outbound-channel-adapter directory="/aaa" 
+		 filename-generator-expression="headers.timestamp+'.txt'"
+		 channel="fileOut"></int-file:outbound-channel-adapter>
+	 <bean id="filenameGenerator" class="demo3.DummyFileGenerator"/>
+	
+	<int:poller default="true" max-messages-per-poll="3" fixed-rate="1000"></int:poller>
+	<int:channel id="rssInput"></int:channel>
+	<int:channel id="fileOut"></int:channel>
+	<!-- <int:publish-subscribe-channel id="first" >
+	
+	</int:publish-subscribe-channel> -->
+	
+</beans>
