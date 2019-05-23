@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:int-webflux="http://www.springframework.org/schema/integration/webflux"
+	xmlns:int-stream="http://www.springframework.org/schema/integration/stream"
+	xmlns:int-feed="http://www.springframework.org/schema/integration/feed"
+	xmlns:int-file="http://www.springframework.org/schema/integration/file"
+	xsi:schemaLocation="
+   http://www.springframework.org/schema/beans
+   https://www.springframework.org/schema/beans/spring-beans.xsd
+   http://www.springframework.org/schema/integration
+   https://www.springframework.org/schema/integration/spring-integration.xsd
+   http://www.springframework.org/schema/integration/webflux
+   https://www.springframework.org/schema/integration/webflux/spring-integration-webflux.xsd
+   http://www.springframework.org/schema/integration/stream
+   https://www.springframework.org/schema/integration/stream/spring-integration-stream.xsd
+   http://www.springframework.org/schema/integration/file
+   https://www.springframework.org/schema/integration/file/spring-integration-file.xsd
+   http://www.springframework.org/schema/integration/feed
+   https://www.springframework.org/schema/integration/feed/spring-integration-feed.xsd">
+
+
+
+	<int-file:inbound-channel-adapter
+		directory="/aaa/input" channel="inputchannel"></int-file:inbound-channel-adapter>
+	<int-file:outbound-channel-adapter
+		directory="/aaa/output" channel="outputchannel"></int-file:outbound-channel-adapter>
+	<int-file:outbound-channel-adapter
+		directory="/aaa/discard" channel="discardchannel"></int-file:outbound-channel-adapter>
+
+	<int:filter discard-channel="discardchannel" ref="filter1" output-channel="outputchannel"
+		input-channel="inputchannel"></int:filter>
+
+	<int:poller default="true" max-messages-per-poll="3"
+		fixed-rate="1000"></int:poller>
+	<int:channel id="inputchannel"></int:channel>
+	<int:channel id="outputchannel"></int:channel>
+	<int:channel id="discardchannel"></int:channel>
+
+
+</beans>
