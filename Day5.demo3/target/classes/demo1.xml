@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:int-webflux="http://www.springframework.org/schema/integration/webflux"
+	xmlns:int-http="http://www.springframework.org/schema/integration/http"
+	xmlns:int-file="http://www.springframework.org/schema/integration/file"
+	xmlns:int-stream="http://www.springframework.org/schema/integration/stream"
+	xsi:schemaLocation="
+   http://www.springframework.org/schema/beans
+   https://www.springframework.org/schema/beans/spring-beans.xsd
+   http://www.springframework.org/schema/integration
+   https://www.springframework.org/schema/integration/spring-integration.xsd
+   http://www.springframework.org/schema/integration/webflux
+   https://www.springframework.org/schema/integration/webflux/spring-integration-webflux.xsd
+   http://www.springframework.org/schema/integration/http
+   https://www.springframework.org/schema/integration/http/spring-integration-http.xsd
+    http://www.springframework.org/schema/integration/file
+   https://www.springframework.org/schema/integration/file/spring-integration-file.xsd
+     http://www.springframework.org/schema/integration/stream
+   https://www.springframework.org/schema/integration/stream/spring-integration-stream.xsd
+   ">
+
+<int-stream:stdin-channel-adapter id="starter" channel="input" ></int-stream:stdin-channel-adapter>
+<int:recipient-list-router input-channel="input">
+	<int:recipient channel="list1Jet"/>
+	<int:recipient channel="list2Air"/>
+</int:recipient-list-router>
+
+<int-http:outbound-gateway request-channel="list1Jet" 
+		url="http://localhost:8090/jet/pune/blr" reply-channel="agin" http-method="GET" 
+		expected-response-type="java.lang.String" />
+		
+ <int-http:outbound-gateway request-channel="list2Air" 
+		url="http://localhost:8091/air?from={fromv}&amp;to={tov}" reply-channel="agin" http-method="GET" 
+		expected-response-type="java.lang.String" >
+			<int-http:uri-variable name="fromv" expression="'hyd'"/>
+			<int-http:uri-variable name="tov" expression="'del'"/>
+	</int-http:outbound-gateway>
+
+<int:aggregator input-channel="agin" ref="flightAggregator" 
+		output-channel="agout"  correlation-strategy="corr" 
+		release-strategy="rel"
+		></int:aggregator>
+
+<int-file:outbound-channel-adapter directory="/aaa/output" channel="agout"></int-file:outbound-channel-adapter>
+
+<int:channel id="input"></int:channel>
+<int:channel id="list1Jet"></int:channel>
+<int:channel id="list2Air"></int:channel>
+<!-- <int:channel id="outputjet"></int:channel>
+<int:channel id="outputair"></int:channel> -->
+<int:channel id="agout"></int:channel>
+
+	<int:poller default="true" max-messages-per-poll="5"
+		fixed-rate="2000"></int:poller>
+</beans>
+
