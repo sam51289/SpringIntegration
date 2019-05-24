@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:int-webflux="http://www.springframework.org/schema/integration/webflux"
+	xmlns:int-http="http://www.springframework.org/schema/integration/http"
+	xmlns:int-file="http://www.springframework.org/schema/integration/file"
+	xmlns:int-stream="http://www.springframework.org/schema/integration/stream"
+	xsi:schemaLocation="
+   http://www.springframework.org/schema/beans
+   https://www.springframework.org/schema/beans/spring-beans.xsd
+   http://www.springframework.org/schema/integration
+   https://www.springframework.org/schema/integration/spring-integration.xsd
+   http://www.springframework.org/schema/integration/webflux
+   https://www.springframework.org/schema/integration/webflux/spring-integration-webflux.xsd
+   http://www.springframework.org/schema/integration/http
+   https://www.springframework.org/schema/integration/http/spring-integration-http.xsd
+    http://www.springframework.org/schema/integration/file
+   https://www.springframework.org/schema/integration/file/spring-integration-file.xsd
+     http://www.springframework.org/schema/integration/stream
+   https://www.springframework.org/schema/integration/stream/spring-integration-stream.xsd
+   ">
+
+
+	<int-stream:stdin-channel-adapter
+		channel="stdin"></int-stream:stdin-channel-adapter>
+
+	<int-http:outbound-gateway url="http://localhost:8080/emp"
+		request-channel="invokehttp" reply-channel="storefile"
+		expected-response-type="java.lang.String" charset="UTF-8" http-method="GET">
+	</int-http:outbound-gateway>
+
+	<int:header-enricher input-channel="stdin" output-channel="invokehttp">
+			<int:header name="content-type" value="application/json" />
+			<int:header name="accept" value="application/json" />
+	</int:header-enricher>
+		
+		
+	<int-file:outbound-channel-adapter
+		directory="/aaa/output" channel="storefile"></int-file:outbound-channel-adapter>
+	<int:channel id="stdin"></int:channel>
+	<int:channel id="storefile"></int:channel>
+	
+	<int:channel id="invokehttp"></int:channel>
+
+	<int:poller default="true" max-messages-per-poll="5"
+		fixed-rate="2000"></int:poller>
+</beans>
+
